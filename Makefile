@@ -9,7 +9,7 @@ DEVELOPMENT = ${DEVELOPMENT_DIR}/${FILENAME}
 PRODUCTION_FOLDER = ${PRODUCTION_DIR}/${MODULE}
 DEVELOPMENT_FOLDER = ${DEVELOPMENT_DIR}/${MODULE}
 
-all: premake body
+all: premake body skins
 
 premake:
 	mkdir -p ${DEVELOPMENT_FOLDER}
@@ -20,6 +20,16 @@ body:
 	${UGLIFYJS} ${DEVELOPMENT} > ${PRODUCTION}
 	cp ${SOURCE_DIR}/Jplayer.swf ${DEVELOPMENT_FOLDER}/
 	cp ${SOURCE_DIR}/Jplayer.swf ${PRODUCTION_FOLDER}/
+
+skins:
+	mkdir -p ${DEVELOPMENT_FOLDER}/skin
+	mkdir -p ${PRODUCTION_FOLDER}/skin
+
+	mkdir -p ${DEVELOPMENT_FOLDER}/skin/blue.monday
+	cp -Rp skin/blue.monday/* ${DEVELOPMENT_FOLDER}/skin/blue.monday/
+
+	mkdir -p ${DEVELOPMENT_FOLDER}/skin/pink.flag
+	cp -Rp skin/pink.flag/* ${DEVELOPMENT_FOLDER}/skin/pink.flag/
 
 clean:
 	rm -rf ${DEVELOPMENT}
