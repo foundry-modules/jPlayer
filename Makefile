@@ -1,38 +1,30 @@
+all: modularize-script minify-script copy-player skins
+
 include ../../build/modules.mk
 
 MODULE = jplayer
-FILENAME = ${MODULE}.js
-SOURCE_DIR = jquery.jplayer
-SOURCE = ${SOURCE_DIR}/jquery.${MODULE}.js
-PRODUCTION = ${PRODUCTION_DIR}/${FILENAME}
-DEVELOPMENT = ${DEVELOPMENT_DIR}/${FILENAME}
-PRODUCTION_FOLDER = ${PRODUCTION_DIR}/${MODULE}
-DEVELOPMENT_FOLDER = ${DEVELOPMENT_DIR}/${MODULE}
+MODULARIZE_OPTIONS = -jq
+SOURCE_SCRIPT_FOLDER = jquery.jplayer
 
-all: premake body skins
+SKIN_LESS_CONVERTER = sed 's/url("/url("@{foundry_uri}\/jplayer\/${SKIN_NAME}\//g'
 
-premake:
-	mkdir -p ${DEVELOPMENT_FOLDER}
-	mkdir -p ${PRODUCTION_FOLDER}
-
-body:
-	${MODULARIZE} -jq -n "${MODULE}" ${SOURCE} > ${DEVELOPMENT}
-	${UGLIFYJS} ${DEVELOPMENT} > ${PRODUCTION}
-	cp ${SOURCE_DIR}/Jplayer.swf ${DEVELOPMENT_FOLDER}/
-	cp ${SOURCE_DIR}/Jplayer.swf ${PRODUCTION_FOLDER}/
+copy-player: create-script-folder
+	cp ${SOURCE_SCRIPT_FOLDER}/Jplayer.swf ${TARGET_SCRIPT_FOLDER}/
 
 skins:
-	mkdir -p ${DEVELOPMENT_FOLDER}/skin
-	mkdir -p ${PRODUCTION_FOLDER}/skin
+	make skin-blue.monday
+	make skin-pink.flag
 
-	mkdir -p ${DEVELOPMENT_FOLDER}/skin/blue.monday
-	cp -Rp skin/blue.monday/* ${DEVELOPMENT_FOLDER}/skin/blue.monday/
+prep-skin-%:
+	$(eval SKIN_NAME                = $*)
+	$(eval SOURCE_STYLE_FOLDER      = skin/$*)
+	$(eval SOURCE_STYLE_FILE        = skin/$*/jplayer.$*.css)
+	$(eval TARGET_STYLE_FOLDER      = ${FOUNDRY_STYLES_FOLDER}/jplayer/$*)
+	$(eval TARGET_STYLE_FILE_NAME   = style)
+	$(eval SOURCE_ASSET_FILES       = skin/$*/*.png skin/$*/*.jpg skin/$*/*.gif)
+	$(eval TARGET_ASSET_FOLDER_NAME = $*)
+	$(eval TARGET_STYLE_LESS_CONVERTER = ${SKIN_LESS_CONVERTER})
 
-	mkdir -p ${DEVELOPMENT_FOLDER}/skin/pink.flag
-	cp -Rp skin/pink.flag/* ${DEVELOPMENT_FOLDER}/skin/pink.flag/
+skin-blue.monday: prep-skin-blue.monday copy-style minify-style lessify-style copy-assets
 
-clean:
-	rm -rf ${DEVELOPMENT}
-	rm -rf ${DEVELOPMENT_FOLDER}
-	rm -rf ${PRODUCTION}
-	rm -rf ${PRODUCTION_FOLDER}
+skin-pink.flag: prep-skin-blue.monday copy-style minify-style lessify-style copy-assets
